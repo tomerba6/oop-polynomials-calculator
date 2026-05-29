@@ -7,13 +7,41 @@ import calculator.scalars.Scalar;
 
 import java.util.*;
 
+/**
+ * Represents a mathematical polynomial.
+ * <p>
+ * A polynomial is defined as a collection of {@link Monomial}s with distinct exponents.
+ * This class provides methods to build polynomials from string inputs, perform
+ * algebraic operations (addition, multiplication), evaluate the polynomial for
+ * specific scalar values, and compute its derivative.
+ * </p>
+ */
 public class Polynomial {
+
+    /**
+     * The collection of distinct monomials that make up this polynomial.
+     */
     private Collection<Monomial> monomials;
 
+    /**
+     * Private constructor to initialize an empty polynomial.
+     */
     private Polynomial() {
         monomials = new ArrayList<>();
     }
 
+    /**
+     * Builds a Polynomial from a space-separated string of coefficients.
+     * <p>
+     * The index of each coefficient in the string corresponds to its exponent
+     * (e.g., "1 2 3" becomes 1 + 2x + 3x^2). The method automatically determines
+     * the appropriate Scalar type (Rational, Real, or Integer) based on the presence
+     * of '/' or '.' characters.
+     * </p>
+     *
+     * @param input The string containing space-separated scalar coefficients.
+     * @return A new constructed and sorted Polynomial.
+     */
     public static Polynomial build(String input) {
         Polynomial poly = new Polynomial();
         String[] parts = input.trim().split("\\s+");
@@ -31,7 +59,6 @@ public class Polynomial {
                 );
             } else if (part.contains(".")) {
                 scalar = new RealScalar(Double.parseDouble(part));
-
             } else {
                 scalar = new IntegerScalar(Integer.parseInt(part));
             }
@@ -43,8 +70,13 @@ public class Polynomial {
         return poly;
     }
 
-    public Polynomial add(Polynomial p){
-
+    /**
+     * Adds another polynomial to this polynomial.
+     *
+     * @param p The polynomial to add.
+     * @return A new Polynomial representing the sum.
+     */
+    public Polynomial add(Polynomial p) {
         Polynomial result = new Polynomial();
 
         for (Monomial m : this.monomials) {
@@ -58,7 +90,18 @@ public class Polynomial {
         result.sortMonomials();
         return result;
     }
-    public Polynomial mul(Polynomial p){
+
+    /**
+     * Multiplies this polynomial by another polynomial.
+     * <p>
+     * Distributes every monomial in this polynomial across every monomial
+     * in the given polynomial.
+     * </p>
+     *
+     * @param p The polynomial to multiply by.
+     * @return A new Polynomial representing the product.
+     */
+    public Polynomial mul(Polynomial p) {
         Polynomial result = new Polynomial();
 
         for (Monomial m1 : p.monomials) {
@@ -71,7 +114,13 @@ public class Polynomial {
         return result;
     }
 
-    public Scalar evaluate(Scalar s){
+    /**
+     * Evaluates the polynomial for a given scalar value of 'x'.
+     *
+     * @param s The scalar value to substitute into the polynomial.
+     * @return A new Scalar representing the evaluated total.
+     */
+    public Scalar evaluate(Scalar s) {
         Scalar sum = new IntegerScalar(0);
 
         for (Monomial m : this.monomials) {
@@ -81,7 +130,15 @@ public class Polynomial {
         return sum;
     }
 
-    public Polynomial derivative(){
+    /**
+     * Computes the mathematical derivative of this polynomial.
+     * <p>
+     * Applies the power rule to every monomial within the polynomial.
+     * </p>
+     *
+     * @return A new Polynomial representing the derivative.
+     */
+    public Polynomial derivative() {
         Polynomial result = new Polynomial();
 
         for (Monomial m : this.monomials) {
@@ -91,13 +148,14 @@ public class Polynomial {
         return result;
     }
 
-
     /**
-     * @param m new Monomial to add to the Collection
-     * @see #build(String)
-     * @see #add(Polynomial)
-     * @see #mul(Polynomial)
-     * @see #mul(Polynomial)
+     * Helper method to safely add a new Monomial to the collection.
+     * <p>
+     * If a monomial with the same exponent already exists, their coefficients
+     * are summed. If the resulting coefficient is zero, the term is removed entirely.
+     * </p>
+     *
+     * @param m The new Monomial to add.
      */
     private void addMonomial(Monomial m) {
         if (m == null || m.sign() == 0) {
@@ -111,7 +169,6 @@ public class Polynomial {
 
             if (existing.getExponent() == m.getExponent()) {
                 Monomial sum = existing.add(m);
-
                 it.remove();
 
                 if (sum.sign() != 0) {
@@ -125,23 +182,29 @@ public class Polynomial {
     }
 
     /**
-     * Helper function for sorting the Collection of monomials
-     *
-     * @see #monomials
-     * @see #add(Polynomial)
-     * @see #mul(Polynomial)
+     * Helper method to sort the collection of monomials by their exponents
+     * in ascending order.
      */
     private void sortMonomials() {
         List<Monomial> tempList = new ArrayList<>(this.monomials);
-
         tempList.sort((m1, m2) -> Integer.compare(m1.getExponent(), m2.getExponent()));
-
         this.monomials.clear();
         this.monomials.addAll(tempList);
     }
 
+    /**
+     * Compares this polynomial to another object for equality.
+     * <p>
+     * Two polynomials are equal if their mathematical difference evaluates to zero.
+     * This is verified by subtracting the other polynomial from this one and checking
+     * if the resulting monomial collection is empty.
+     * </p>
+     *
+     * @param o The object to compare with.
+     * @return true if mathematically equal, false otherwise.
+     */
     @Override
-    public boolean equals(Object o){
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Polynomial other)) return false;
 
@@ -156,9 +219,18 @@ public class Polynomial {
         return difference.monomials.isEmpty();
     }
 
+    /**
+     * Returns the string representation of this polynomial.
+     * <p>
+     * Iterates through the sorted monomials and joins them. Automatically formats
+     * addition symbols between terms, omitting the '+' if the term is negative.
+     * </p>
+     *
+     * @return The formatted string of the polynomial, or "0" if empty.
+     */
     @Override
-    public String toString(){
-        if (this.monomials.isEmpty()){
+    public String toString() {
+        if (this.monomials.isEmpty()) {
             return "0";
         }
 
@@ -172,7 +244,6 @@ public class Polynomial {
             else {
                 result = result + m;
             }
-
             isFirst = false;
         }
 
